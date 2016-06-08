@@ -48,7 +48,7 @@ type User struct {
 }
 
 func SQLiteFetch(w http.ResponseWriter, req *http.Request) {
-	db, err := sqlx.Open("sqlite3", "../database/test.db")
+	db, err := sqlx.Open("sqlite3", "../database/test.sqlite")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -67,7 +67,10 @@ func SQLiteFetch(w http.ResponseWriter, req *http.Request) {
 			log.Fatal(err)
 		}
 
-		json.NewEncoder(w).Encode(user)
+		b, _ := json.MarshalIndent(user, "", " ")
+		io.WriteString(w, string(b))
+
+		//json.NewEncoder(w).Encode(user)
 	}
 }
 
