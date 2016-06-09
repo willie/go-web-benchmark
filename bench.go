@@ -47,12 +47,6 @@ type User struct {
 var db, _ = sqlx.Open("sqlite3", "../database/test.sqlite")
 
 func SQLiteFetch(w http.ResponseWriter, req *http.Request) {
-	//	db, err := sqlx.Open("sqlite3", "../database/test.sqlite")
-	//	if err != nil {
-	//		log.Fatal(err)
-	//	}
-	//	defer db.Close()
-
 	user := User{}
 	rows, err := db.Queryx("select * from users order by random() limit 1")
 	if err != nil {
@@ -71,6 +65,18 @@ func SQLiteFetch(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
+// simpler version of SQLiteFetch, but no different performance wise
+func SQLiteFetchAlt(w http.ResponseWriter, req *http.Request) {
+	var user User
+	err := db.QueryRowx("select * from users order by random() limit 1").StructScan(&user)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	b, _ := json.MarshalIndent(user, "", " ")
+	io.WriteString(w, string(b))
+}
+
 var portNumber int
 
 func main() {
@@ -80,6 +86,7 @@ func main() {
 	http.HandleFunc("/plaintext", Plaintext)
 	http.HandleFunc("/json", JSON)
 	http.HandleFunc("/sqlite-fetch", SQLiteFetch)
+	http.HandleFunc("/sqlite-fetch2", SQLiteFetchAlt)
 
 	log.Println("bench running on", fmt.Sprintf("%d", portNumber))
 
