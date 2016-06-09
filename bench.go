@@ -33,12 +33,8 @@ func JSON(w http.ResponseWriter, req *http.Request) {
 		Double: 3.14,
 		Null:   nil}
 
-	// I *think* the test requests pretty formatting for this test
 	b, _ := json.MarshalIndent(j, "", " ")
 	io.WriteString(w, string(b))
-
-	// unformatted
-	//json.NewEncoder(w).Encode(j)
 }
 
 type User struct {
@@ -47,12 +43,15 @@ type User struct {
 	Email string `db:"email" json:"email,omitempty"`
 }
 
+// typical usage would keep or cache the open DB connection
+var db, _ = sqlx.Open("sqlite3", "../database/test.sqlite")
+
 func SQLiteFetch(w http.ResponseWriter, req *http.Request) {
-	db, err := sqlx.Open("sqlite3", "../database/test.sqlite")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer db.Close()
+	//	db, err := sqlx.Open("sqlite3", "../database/test.sqlite")
+	//	if err != nil {
+	//		log.Fatal(err)
+	//	}
+	//	defer db.Close()
 
 	user := User{}
 	rows, err := db.Queryx("select * from users order by random() limit 1")
@@ -69,8 +68,6 @@ func SQLiteFetch(w http.ResponseWriter, req *http.Request) {
 
 		b, _ := json.MarshalIndent(user, "", " ")
 		io.WriteString(w, string(b))
-
-		//json.NewEncoder(w).Encode(user)
 	}
 }
 
